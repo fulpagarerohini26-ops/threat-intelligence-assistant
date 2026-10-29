@@ -1,52 +1,56 @@
 # Project Charter
 
 ## Project Title
-GFR 2017 Intelligent Policy Assistant
 
-## Phase
-Phase 1 – Discovery and Scope
+Telecom Threat Intelligence Retrieval & Analysis Assistant
 
-## Project Purpose
-Develop an AI-powered assistant that enables users to ask natural-language questions about the General Financial Rules (GFR) 2017, including updates through 2024, and receive accurate, evidence-grounded responses with direct references to the source document.
+## Purpose
 
-## Problem Statement
-Government finance and compliance professionals often spend significant time locating relevant provisions within the GFR document. A conversational assistant can improve information discovery, reduce search effort, and help users quickly access applicable rules and references.
+Help telecom security teams locate and understand relevant threat intelligence in the supplied ITU-T *Security in Telecommunications and Information Technology* reference. The assistant uses retrieval-augmented generation to return concise, page-cited explanations.
+
+## Problem
+
+Telecommunications security teams must analyze lengthy reports, advisories, and technical references covering threats, vulnerabilities, incident response, and network protections. Manually searching these documents is time-consuming and can delay understanding. This capstone demonstrates a conversational way to retrieve and summarize the supplied reference.
 
 ## Target Users
-- Financial Analysts
-- Auditors
-- Compliance Officers
+
+- Telecom security analysts
+- Network security engineers
+- Incident-response and risk teams
+- Cybersecurity leaders seeking concise briefings
 
 ## Scope
 
-### Inputs
-- Natural-language questions related to GFR 2017 and amendments/updates through 2024.
+### In scope
 
-### Outputs
-- Evidence-grounded answers.
-- Supporting excerpts from the source documents.
-- Relevant document, chapter, rule, and clause references.
+- Natural-language question answering over the supplied ITU-T PDF.
+- Threat explanations, summaries, evidence-based recommendations, comparisons, and executive-style briefings.
+- Semantic retrieval and displayed source excerpts with PDF page references.
+- Local reusable index and reproducible offline unit tests.
 
-### Core Capabilities
-- Understand user questions in natural language.
-- Retrieve relevant sections from GFR documentation.
-- Generate contextual answers based on retrieved evidence.
-- Provide traceable references to source content.
+### Out of scope
 
-## Success Criteria
-- Users receive relevant and accurate responses to GFR-related queries.
-- Every answer includes supporting evidence and references.
-- Responses are transparent and traceable to official source documents.
+- Live threat feeds, vulnerability databases, or additional documents.
+- Automated scans, configuration changes, or incident-response actions on telecom systems.
+- Authentication, multi-user query history, production hosting, and legal or professional advice.
 
-## Assumptions
-- Official GFR 2017 document and 2024 updates are available in digital format.
-- Source documents used for retrieval are approved and authoritative.
+## Data
 
-## Constraints and Limitations
-- The assistant supports interpretation and information discovery only.
-- The assistant does not replace the official GFR document.
-- The assistant does not provide legal, regulatory, audit, or professional advice.
-- Final decisions must be validated against the official source documents and applicable professional review processes.
+The initial source is `project-requirement/T-TUT-ICTSS-2020-4-PDF-E.pdf`, provided with the project requirements. The accompanying problem statement identifies it as *Security in Telecommunications and Information Technology (7th Edition)*. Page citations refer to the supplied PDF's page numbering.
 
 ## Deliverable
-A Retrieval-Augmented Generation (RAG) based question-answering assistant for GFR 2017 (updated through 2024) that provides evidence-backed responses with source references.
+
+A Python Streamlit application using Gemini embeddings and generation, a local SQLite retrieval cache, focused tests, Specify artifacts, setup instructions, and this capstone report.
+
+## Limitations and Responsible Use
+
+The assistant reflects only the supplied reference and may omit context or produce errors. It is not a real-time advisory service or a substitute for current vendor advisories, official sources, or qualified review. Users must verify important conclusions against the source and current guidance. The system does not execute actions against networks.
+
+## Success Measures
+
+- Successful answers show the retrieved passages and page numbers.
+- Insufficient evidence is disclosed rather than filled with invented facts.
+- The unchanged reference uses the cached index on later launches.
+- Deterministic retrieval and chunking tests pass without network access.
+
+Detailed functional requirements and acceptance scenarios are in the [Specify feature](../specs/001-threat-intelligence-assistant/spec.md).

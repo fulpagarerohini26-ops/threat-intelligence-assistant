@@ -1,38 +1,51 @@
-# financial-risk-assistant-git-repo
-financial-risk-assistant-git-repo capstone project
+# Telecom Threat Intelligence Assistant
 
-# Intelligent Financial Risk Retrieval & Analysis Assistant
+A compact Retrieval-Augmented Generation (RAG) capstone that answers telecom cybersecurity questions using the supplied ITU-T *Security in Telecommunications and Information Technology* reference PDF. Answers include retrieved excerpts and page numbers so users can verify claims in the source.
 
-1. Problem Statement
-Financial policies, risk assessment regulations, and compliance frameworks are often embedded within lengthy and complex government documents such as the General Financial Rules (GFR) 2017 (updated in 2024). Financial analysts and compliance officers spend significant time manually locating relevant clauses and understanding their implications for financial governance and risk management.
-This project aims to develop an AI-powered Retrieval-Augmented Generation (RAG) that can intelligently retrieve, analyze, and summarize key risk factors, compliance requirements, and financial management policies from regulatory documents such as GFR 2017.
-The assistant will allow users to query the document in natural language (e.g., “What are the procurement risk guidelines?” or “Summarize financial accountability rules”), and will return contextual, clause-based, and explainable responses derived from the original policy text.
+## What it does
 
-2. Objective
-●	To build a Regulatory Knowledge Assistant capable of:
+- Extracts page-aware passages from the supplied PDF.
+- Uses Gemini embeddings and cosine similarity to retrieve relevant passages.
+- Uses Gemini to explain threats, summarize guidance, compare topics, and suggest mitigations from retrieved evidence.
+- Displays source passages and page references with each answer.
+- Caches embeddings locally in SQLite and rebuilds the cache if the PDF changes.
 
-○	Retrieving relevant financial risk and compliance information from the GFR 2017 document.
+The assistant is advisory and not a real-time threat feed, incident-response tool, or replacement for expert review. Questions and retrieved excerpts are sent to Gemini for processing; do not enter sensitive operational data.
 
-○	Summarizing lengthy sections into concise, human-readable explanations.
+## Run locally
 
-○	Assisting financial professionals, auditors, and government officials in understanding rules, risk exposure, and procedural compliance.
+Requires Python 3.10+ and a Gemini API key.
 
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
 
-3. About the Data
-●	Dataset Used: General Financial Rules (GFR) 2017 – Updated in 2024
+Set `GOOGLE_API_KEY` in `.env`, then run:
 
-●	Source: Ministry of Finance, Government of India
+```powershell
+streamlit run app.py
+```
 
-●	Type: Textual Policy Document (PDF format, 200+ pages)
+The app indexes the provided PDF on its first run; the local cache is stored in `.cache\` and is not committed. See [the quickstart](specs/001-threat-intelligence-assistant/quickstart.md) for details.
 
-●	Content Overview:
+## Tests
 
-1.	Principles of financial management and control
+```powershell
+python -m unittest discover -s tests -v
+```
 
-2.	Risk and accountability rules for public funds
+The unit tests do not require a key or make live API calls.
 
-3.	Procurement, expenditure, and auditing guidelines
+## Project documentation
 
-4.	Delegation of financial powers
+- [Capstone report](docs/capstone-report.md)
+- [Project charter](docs/PROJECT_CHARTER.md)
+- [Specify feature](specs/001-threat-intelligence-assistant/spec.md)
+- [Implementation plan](specs/001-threat-intelligence-assistant/plan.md)
+- [Research decisions](specs/001-threat-intelligence-assistant/research.md)
+- [Quickstart](specs/001-threat-intelligence-assistant/quickstart.md)
 
-Record-keeping and reporting protocols
+The project uses the existing Specify/Spec Kit setup; its constitution and feature artifacts define scope, requirements, design, and implementation tasks.
