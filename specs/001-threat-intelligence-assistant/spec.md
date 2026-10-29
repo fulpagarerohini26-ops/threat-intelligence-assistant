@@ -9,7 +9,7 @@
 
 ### User Story 1 - Ask a source-grounded security question (Priority: P1)
 
-A telecom security analyst asks a natural-language question and receives a concise explanation based on the supplied ITU-T reference, with page-level evidence they can inspect.
+A telecom security analyst asks a natural-language question and receives a concise explanation based on locally retrieved passages from the supplied ITU-T reference, with page-level evidence they can inspect.
 
 **Why this priority**: Grounded question answering is the core project outcome.
 
@@ -37,14 +37,14 @@ A telecom security professional asks for a threat explanation, incident-response
 
 A project operator runs the application with the supplied PDF and a Gemini API key; the application extracts page-aware passages and reuses a local index on subsequent runs.
 
-**Why this priority**: Reliable, repeatable retrieval is required to support the user journeys without repeatedly embedding the full reference.
+**Why this priority**: Reliable, repeatable local retrieval avoids external embedding quota and supports the user journeys.
 
-**Independent Test**: Build the index from the supplied PDF, verify passages preserve source page numbers, then restart and verify the stored index is reused while the PDF remains unchanged.
+**Independent Test**: Build the local index from the supplied PDF, verify passages preserve source page numbers, then restart and verify the stored index is reused while the PDF remains unchanged without calling a model API.
 
 **Acceptance Scenarios**:
 
 1. **Given** the PDF is available and readable, **When** the application starts, **Then** it indexes extracted text and reports meaningful setup errors if indexing fails.
-2. **Given** a valid index exists for the unchanged PDF, **When** the application starts again, **Then** it loads the saved index without re-embedding the document.
+2. **Given** a valid index exists for the unchanged PDF, **When** the application starts again, **Then** it loads the saved index without calling Gemini.
 
 ## Edge Cases
 
@@ -61,7 +61,7 @@ A project operator runs the application with the supplied PDF and a Gemini API k
 
 - **FR-001**: The application MUST accept natural-language telecom security questions through a browser interface.
 - **FR-002**: The application MUST extract text from the supplied PDF while preserving one-based page numbers.
-- **FR-003**: The application MUST retrieve semantically relevant passages before requesting a generated response.
+- **FR-003**: The application MUST retrieve relevant passages locally using SQLite full-text BM25 search before requesting a generated response.
 - **FR-004**: The application MUST show source passages and page references alongside each answer.
 - **FR-005**: The application MUST base responses only on retrieved evidence and disclose insufficient evidence.
 - **FR-006**: The application MUST support threat explanations, mitigation recommendations, comparisons, and executive summaries through the question interface.
@@ -73,10 +73,10 @@ A project operator runs the application with the supplied PDF and a Gemini API k
 ### Key Entities
 
 - **Document**: The source PDF, its identity, and content fingerprint.
-- **Passage**: Extracted text, source page number, and semantic embedding.
-- **Query**: User's natural-language question and its query embedding.
+- **Passage**: Extracted text and source page number, indexed locally for full-text search.
+- **Query**: User's natural-language question and its locally tokenized search terms.
 - **Answer**: Generated response and the supporting retrieved passages.
-- **Index**: Local cache of passages and embeddings tied to one document fingerprint and embedding model.
+- **Index**: Local FTS5/BM25 cache of passages tied to one document fingerprint and index version.
 
 ## Success Criteria
 
@@ -84,13 +84,13 @@ A project operator runs the application with the supplied PDF and a Gemini API k
 
 - **SC-001**: Every successful answer displays at least one source passage with a page number.
 - **SC-002**: A question whose source evidence is insufficient receives an explicit evidence-gap response.
-- **SC-003**: Reopening the app with an unchanged PDF reuses the saved index rather than embedding all pages again.
+- **SC-003**: Reopening the app with an unchanged PDF reuses the saved local index without making embedding API requests.
 - **SC-004**: The deterministic test suite validates chunk page attribution, chunk boundaries, and ranking without requiring a network connection.
 
 ## Assumptions
 
 - The supplied `project-requirement/T-TUT-ICTSS-2020-4-PDF-E.pdf` is the authoritative initial source and contains selectable/extractable text.
-- Gemini API access and an API key are available to run live generation and semantic embeddings.
+- Gemini API access and an API key are available to generate live answers; indexing and retrieval are local.
 - Streamlit is the requested low-code browser interface; no authentication or multi-user history is required for this local capstone.
 - Generated answers support discovery and education only. Users must verify current operational decisions against authoritative sources and qualified professionals.
 - No benchmark or live model accuracy is claimed until an operator performs and records the documented evaluation.

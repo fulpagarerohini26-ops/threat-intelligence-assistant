@@ -5,16 +5,16 @@ A compact Retrieval-Augmented Generation (RAG) capstone that answers telecom cyb
 ## What it does
 
 - Extracts page-aware passages from the supplied PDF.
-- Uses Gemini embeddings and cosine similarity to retrieve relevant passages.
+- Uses SQLite FTS5/BM25 to retrieve relevant passages locally without Gemini embedding requests.
 - Uses Gemini to explain threats, summarize guidance, compare topics, and suggest mitigations from retrieved evidence.
 - Displays source passages and page references with each answer.
-- Caches embeddings locally in SQLite and rebuilds the cache if the PDF changes.
+- Caches a full-text index locally in SQLite and rebuilds it if the PDF changes.
 
-The assistant is advisory and not a real-time threat feed, incident-response tool, or replacement for expert review. Questions and retrieved excerpts are sent to Gemini for processing; do not enter sensitive operational data.
+The assistant is advisory and not a real-time threat feed, incident-response tool, or replacement for expert review. Questions and retrieved excerpts are sent to Gemini for answer generation; do not enter sensitive operational data.
 
 ## Run locally
 
-Requires Python 3.10+ and a Gemini API key.
+Requires Python 3.10+ and a Gemini API key for answer generation. PDF indexing and retrieval are local and do not consume Gemini embedding quota.
 
 ```powershell
 python -m venv .venv

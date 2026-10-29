@@ -34,15 +34,15 @@ if not SOURCE_PDF.is_file():
 
 client = genai.Client(api_key=api_key)
 try:
-    rebuilt = ensure_index(SOURCE_PDF, INDEX_DB, client)
+    rebuilt = ensure_index(SOURCE_PDF, INDEX_DB)
 except (APIError, OSError, ValueError, RuntimeError, sqlite3.Error) as error:
     st.error(f"Could not prepare the reference index: {error}")
     st.stop()
 
 if rebuilt:
-    st.success("Reference indexed and cached locally.")
+    st.success("Reference indexed locally; loading it uses no Gemini embedding requests.")
 else:
-    st.caption("Using the cached index for the unchanged reference PDF.")
+    st.caption("Using the local BM25 index for the unchanged reference PDF.")
 
 with st.form("question_form"):
     question = st.text_input(
@@ -55,11 +55,19 @@ if submitted:
     try:
         answer, sources = answer_question(question, INDEX_DB, client)
     except (APIError, OSError, ValueError, RuntimeError, sqlite3.Error) as error:
-        st.error(f"Could not answer the question: {error}")
+        if "429" in str(error) or "RESOURCE_EXHAUSTED" in str(error):
+            st.error(
+                "Gemini's generation quota is temporarily exhausted. Wait for the quota "
+                "window to reset, then submit the question again. PDF indexing and search "
+                "are local and do not use the Gemini embedding quota."
+            )
+        else:
+            st.error(f"Could not answer the question: {error}")
     else:
         st.subheader("Answer")
         st.markdown(answer)
-        with st.expander("Retrieved evidence"):
-            for source in sources:
-                st.markdown(f"**Page {source['page']}**")
-                st.write(source["content"])
+        if sources:
+            with st.expander("Retrieved evidence"):
+                for source in sources:
+                    st.markdown(f"**Page {source['page']}**")
+                    st.write(source["content"])

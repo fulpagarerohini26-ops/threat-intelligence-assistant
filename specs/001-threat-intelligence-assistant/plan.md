@@ -4,7 +4,7 @@
 
 ## Summary
 
-Build a compact Streamlit RAG application for the supplied ITU-T telecommunications security PDF. Use Gemini embeddings for retrieval, Gemini generation for evidence-grounded answers, SQLite for a source-fingerprinted local index, and page-level citations in the UI.
+Build a compact Streamlit RAG application for the supplied ITU-T telecommunications security PDF. Use local SQLite FTS5/BM25 retrieval to avoid embedding API quotas, Gemini generation for evidence-grounded answers, a source-fingerprinted local index, and page-level citations in the UI.
 
 ## Technical Context
 
@@ -15,7 +15,7 @@ Build a compact Streamlit RAG application for the supplied ITU-T telecommunicati
 **Target Platform**: Local development on Windows, macOS, or Linux  
 **Project Type**: Single-project web app  
 **Performance Goals**: Reuse the local index for unchanged source data; make no unsupported latency promise  
-**Constraints**: Gemini API key and network are required for initial embedding and generated answers; source PDF must be text-extractable  
+**Constraints**: Gemini API key and network are required only for generated answers; source PDF must be text-extractable
 **Scale/Scope**: One supplied PDF, one local operator, small top-k retrieval; no authentication or deployment infrastructure
 
 ## Constitution Check
@@ -53,14 +53,14 @@ project-requirement/
 ## Design
 
 1. Read the supplied PDF with pypdf and split extracted page text into overlapping character chunks.
-2. Embed passages using Gemini and store passage text, page, embedding model, and PDF SHA-256 in SQLite.
-3. Reuse an index only when both the PDF fingerprint and embedding model match.
-4. Embed each question, rank passages by cosine similarity, and pass the top matches to Gemini with a source-only system instruction.
+2. Store page-aware passages in a local SQLite FTS5 index.
+3. Reuse an index only when the PDF fingerprint and index version match.
+4. Rank question terms with BM25 and pass the top matches to Gemini with a source-only system instruction.
 5. Render the answer and page-numbered evidence in Streamlit; explicitly disclose missing setup or evidence.
 
 ## Validation Strategy
 
-- Unit tests cover text chunking, page attribution, empty text, and cosine similarity/ranking using local fake embeddings.
+- Unit tests cover text chunking, page attribution, empty text, and local BM25 ranking without API calls.
 - Run the test suite without a model key to prove core logic is offline-testable.
 - Live end-to-end question quality requires a user-provided Gemini key and is not claimed by unit tests.
 - Follow `quickstart.md` for a manual setup and smoke test.

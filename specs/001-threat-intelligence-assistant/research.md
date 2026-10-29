@@ -2,18 +2,17 @@
 
 ## Decisions
 
-### Use Gemini embeddings and generation
+### Use local BM25 retrieval and Gemini generation
 
-- **Decision**: Use Google's `google-genai` SDK for embedding and generated responses, with `gemini-embedding-001` and `gemini-2.5-flash`.
-- **Reason**: One provider supplies both semantic retrieval and response generation, minimizing integration code and model-provider configuration.
-- **Embedding roles**: Use `RETRIEVAL_DOCUMENT` for source passages and `RETRIEVAL_QUERY` for user questions; cap generated answers at 512 tokens.
-- **Alternative considered**: Local TF-IDF or BM25. This removes embedding API calls but weakens semantic search for a capstone whose objective explicitly asks for relevant threat insights. It can be added later if offline operation becomes a requirement.
+- **Decision**: Use SQLite FTS5/BM25 locally for indexing and retrieval; use `google-genai` with `gemini-2.5-flash` only for generated answers.
+- **Reason**: The free Gemini embedding quota is limited and embedding the full reference during app loading caused `429 RESOURCE_EXHAUSTED`. Local BM25 removes embedding API requests, makes startup repeatable, and uses the SQLite FTS5 support already available in the Python runtime.
+- **Trade-off**: Lexical BM25 can miss synonyms that semantic embeddings might retrieve. Users can rephrase when the index reports no relevant evidence.
+- **Alternative considered**: Keep Gemini embeddings and add retry/throttling. This would still require multiple quota windows for a large document and make first launch fragile.
 
-### Use a small local SQLite index
+### Use a small local SQLite FTS5 index
 
-- **Decision**: Store each source passage and serialized embedding in a local SQLite database.
-- **Reason**: SQLite is part of Python's standard library, needs no separate service, and makes a PDF fingerprint-based reusable cache straightforward.
-- **Alternative considered**: Recompute embeddings on every app launch. This wastes API calls and startup time.
+- **Decision**: Store searchable passage text, page numbers, and source/index metadata in a local SQLite database.
+- **Reason**: SQLite FTS5 provides BM25 ranking without an external service or additional dependency. A source fingerprint makes index reuse straightforward.
 
 ### Preserve page numbers in passage records
 
@@ -35,7 +34,7 @@
 | Risk | Mitigation |
 |---|---|
 | PDF content changes and stale citations survive | Store the source SHA-256 in SQLite and rebuild on mismatch |
-| Provider unavailable, quota exceeded, or key invalid | Surface configuration/API errors; never substitute an ungrounded answer |
+| Provider unavailable, generation quota exceeded, or key invalid | Surface configuration/API errors; local indexing/search continue without embedding requests and never substitute an ungrounded answer |
 | Retrieved evidence is incomplete or misleading | Instruct the model to cite retrieved pages and state evidence gaps; show passages for user verification |
 | PDF is scanned or extraction returns little text | Fail with a clear message; OCR is explicitly outside v1 |
 | Security guidance becomes outdated | Identify the source/version and warn that the app is not a real-time advisory feed |
@@ -44,4 +43,4 @@
 
 - The index is local to one machine and is not multi-user storage.
 - The supplied PDF is the only initial source; no live vulnerability feed or web retrieval is included.
-- Model output quality and retrieval relevance require a live, human-reviewed evaluation with a configured API key.
+- Lexical BM25 can miss semantically related terms; model output quality and retrieval relevance require a live, human-reviewed evaluation.

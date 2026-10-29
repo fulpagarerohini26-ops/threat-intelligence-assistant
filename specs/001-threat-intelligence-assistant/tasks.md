@@ -13,7 +13,7 @@
 **Goal**: Answer natural-language questions with evidence and page citations.
 
 - [x] T003 [P] Implement page-aware PDF extraction and overlapping chunking in `rag.py`.
-- [x] T004 Implement Gemini embedding, SQLite index, fingerprint invalidation, and cosine retrieval in `rag.py`.
+- [x] T004 Implement local SQLite FTS5/BM25 index and source-fingerprint invalidation in `rag.py`.
 - [x] T005 Implement evidence-only response generation with source context in `rag.py`.
 - [x] T006 Implement Streamlit question form, answer, and cited source display in `app.py`.
 - [x] T007 [P] Test chunking, empty pages, page numbering, and retrieval ranking in `tests/test_rag.py`.

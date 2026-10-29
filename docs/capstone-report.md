@@ -23,10 +23,10 @@ The prototype does not ingest live advisories, conduct network scans, or perform
 | Source | `project-requirement/T-TUT-ICTSS-2020-4-PDF-E.pdf` |
 | Document identified by the problem statement | *Security in Telecommunications and Information Technology*, 7th Edition |
 | Format | PDF |
-| Use | Text extraction, semantic retrieval, and cited answer generation |
+| Use | Text extraction, local full-text retrieval, and cited answer generation |
 | Limitations | Only this supplied reference is indexed; scanned pages without extractable text are not OCR-processed |
 
-The local index stores passage text, page numbers, embeddings, source SHA-256, and the embedding-model name. It stores no API key or user-query history.
+The local index stores passage text and page numbers in SQLite FTS5, plus source SHA-256 and index version metadata. No embeddings, API key, or user-query history are stored.
 
 ## 4. System Architecture
 
@@ -37,15 +37,14 @@ User question
 Streamlit interface (app.py)
      |
      v
-Gemini query embedding -----> SQLite passage index
-                                     ^
-                                     |
 PDF --> pypdf page extraction --> overlapping chunks
                                      |
-                              Gemini embeddings
-     |
-     v
-Cosine-similarity top-k passages
+                           SQLite FTS5 / BM25 index
+                                     ^
+                                     |
+                             User question
+                                     |
+                            BM25 top-k passages
      |
      v
 Gemini grounded response
@@ -54,23 +53,22 @@ Gemini grounded response
 Answer + page-cited evidence in browser
 ```
 
-The cache is rebuilt when the PDF fingerprint or embedding model changes. Retrieval and text-processing behavior are in `rag.py`; the UI is in `app.py`.
+The cache is rebuilt when the PDF fingerprint or local index version changes. Indexing and retrieval make no Gemini embedding requests. Retrieval and text-processing behavior are in `rag.py`; the UI is in `app.py`.
 
 ## 5. Methodology
 
 1. Extract selectable text page by page with pypdf.
 2. Normalize whitespace and split each page into overlapping 1,400-character chunks while preserving one-based page numbers.
-3. Generate passage embeddings with `gemini-embedding-001`.
-4. Persist passages and embeddings in a local SQLite database. Reuse the index for an unchanged PDF.
-5. Embed each user question, rank passages by cosine similarity, and select the top five.
-6. Ask `gemini-2.5-flash` to answer only from the retrieved excerpts, cite page markers, identify evidence gaps, and avoid claiming to perform network actions.
+3. Store passage text and page numbers in SQLite FTS5.
+4. Rank matching passages with BM25 and select the top five; the local index is reused for an unchanged PDF.
+5. Ask `gemini-2.5-flash` to answer only from the retrieved excerpts, cite page markers, identify evidence gaps, and avoid claiming to perform network actions.
 7. Display the generated answer and retrieved source text together for verification.
 
-The API key is loaded from `GOOGLE_API_KEY` in the environment or local `.env` file. `.env` and `.cache/` are excluded from Git. Source excerpts are sent to Gemini for embedding and generation, and questions are sent for embedding/generation; users must not submit sensitive operational data unless that use is approved.
+The API key is loaded from `GOOGLE_API_KEY` in the environment or local `.env` file. `.env` and `.cache/` are excluded from Git. Source excerpts and questions are sent to Gemini for answer generation; users must not submit sensitive operational data unless that use is approved. Loading and searching the PDF do not call the embedding endpoint.
 
 ## 6. Implementation and Testing
 
-The implementation is a single-page Streamlit app, a compact retrieval module, and a standard-library `unittest` suite. Tests cover PDF page attribution/chunking, empty extraction, cosine similarity, ranking, and index reuse with fake model responses. They do not call the Gemini service.
+The implementation is a single-page Streamlit app, a compact retrieval module, and a standard-library `unittest` suite. Tests cover PDF page attribution/chunking, empty extraction, BM25 ranking, spelling aliases, no-match handling, and index reuse. They do not call the Gemini service.
 
 ### Experimental results
 

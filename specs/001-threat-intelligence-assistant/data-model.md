@@ -18,7 +18,7 @@ An extracted page-aware text chunk.
 | `id` | integer | Local SQLite key |
 | `page` | integer | One-based page in the PDF |
 | `content` | text | Extracted text for retrieval and evidence display |
-| `embedding` | JSON array of floats | Gemini semantic representation |
+| `terms` | SQLite FTS5 tokens | Locally indexed searchable text |
 
 ## Index Metadata
 
@@ -27,7 +27,7 @@ Stored in SQLite alongside passages.
 | Field | Type | Meaning |
 |---|---|---|
 | `source_sha256` | text | Fingerprint of indexed PDF |
-| `embedding_model` | text | Model used for passage embeddings |
+| `index_version` | text | Local search-index format version |
 
 ## Query and Answer
 
@@ -41,7 +41,7 @@ Ephemeral request data; not persisted.
 
 ## Relationships and Invariants
 
-- One index belongs to exactly one source fingerprint and embedding model.
+- One index belongs to exactly one source fingerprint and local index version.
 - Every passage has a positive page number and non-empty content.
 - Each answer is generated from its displayed retrieved passages.
 - API credentials are configuration only and are never stored in the database.

@@ -40,7 +40,7 @@ The initial source is `project-requirement/T-TUT-ICTSS-2020-4-PDF-E.pdf`, provid
 
 ## Deliverable
 
-A Python Streamlit application using Gemini embeddings and generation, a local SQLite retrieval cache, focused tests, Specify artifacts, setup instructions, and this capstone report.
+A Python Streamlit application using local SQLite FTS5/BM25 retrieval and Gemini answer generation, focused tests, Specify artifacts, setup instructions, and this capstone report.
 
 ## Limitations and Responsible Use
 

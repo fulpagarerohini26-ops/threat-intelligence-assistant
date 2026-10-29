@@ -4,7 +4,7 @@
 
 - Python 3.10 or newer
 - The supplied ITU-T PDF at `project-requirement/T-TUT-ICTSS-2020-4-PDF-E.pdf`
-- A Gemini API key with access to the configured embedding and generation models
+- A Gemini API key with access to the configured generation model
 
 ## Install
 
@@ -25,7 +25,7 @@ Edit `.env` and set `GOOGLE_API_KEY` to your own key. Do not commit `.env`.
 streamlit run app.py
 ```
 
-On first run, the app extracts and embeds the PDF, then stores a local SQLite index under `.cache\`. First indexing uses the Gemini API and may take time. Later launches reuse the index unless the PDF or embedding model changes.
+On first run, the app extracts the PDF and builds a local SQLite FTS5/BM25 index under `.cache\`; this does not call Gemini or consume embedding quota. Later launches reuse the index unless the PDF changes. Gemini is called only to generate an answer after you submit a question.
 
 Ask a question such as:
 
