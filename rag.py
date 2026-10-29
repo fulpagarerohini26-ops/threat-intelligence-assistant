@@ -9,7 +9,7 @@ from contextlib import closing
 from pathlib import Path
 from typing import Any
 
-GENERATION_MODEL = "gemini-2.5-flash"
+GENERATION_MODEL = "gemini-3.8-flash"
 CHUNK_SIZE = 1400
 CHUNK_OVERLAP = 200
 INDEX_VERSION = "fts5-bm25-v1"

@@ -61,7 +61,7 @@ The cache is rebuilt when the PDF fingerprint or local index version changes. In
 2. Normalize whitespace and split each page into overlapping 1,400-character chunks while preserving one-based page numbers.
 3. Store passage text and page numbers in SQLite FTS5.
 4. Rank matching passages with BM25 and select the top five; the local index is reused for an unchanged PDF.
-5. Ask `gemini-2.5-flash` to answer only from the retrieved excerpts, cite page markers, identify evidence gaps, and avoid claiming to perform network actions.
+5. Ask `gemini-3.8-flash` to answer only from the retrieved excerpts, cite page markers, identify evidence gaps, and avoid claiming to perform network actions.
 7. Display the generated answer and retrieved source text together for verification.
 
 The API key is loaded from `GOOGLE_API_KEY` in the environment or local `.env` file. `.env` and `.cache/` are excluded from Git. Source excerpts and questions are sent to Gemini for answer generation; users must not submit sensitive operational data unless that use is approved. Loading and searching the PDF do not call the embedding endpoint.

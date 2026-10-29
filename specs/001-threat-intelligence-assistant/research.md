@@ -4,7 +4,7 @@
 
 ### Use local BM25 retrieval and Gemini generation
 
-- **Decision**: Use SQLite FTS5/BM25 locally for indexing and retrieval; use `google-genai` with `gemini-2.5-flash` only for generated answers.
+- **Decision**: Use SQLite FTS5/BM25 locally for indexing and retrieval; use `google-genai` with `gemini-3.8-flash` only for generated answers.
 - **Reason**: The free Gemini embedding quota is limited and embedding the full reference during app loading caused `429 RESOURCE_EXHAUSTED`. Local BM25 removes embedding API requests, makes startup repeatable, and uses the SQLite FTS5 support already available in the Python runtime.
 - **Trade-off**: Lexical BM25 can miss synonyms that semantic embeddings might retrieve. Users can rephrase when the index reports no relevant evidence.
 - **Alternative considered**: Keep Gemini embeddings and add retry/throttling. This would still require multiple quota windows for a large document and make first launch fragile.
